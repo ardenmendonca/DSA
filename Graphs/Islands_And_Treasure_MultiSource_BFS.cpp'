@@ -1,0 +1,78 @@
+/*
+FORMAL QUESTION (Islands and Treasure / Walls and Gates style):
+You are given a 2D grid where:
+- 0 represents a treasure/gate,
+- -1 represents a wall,
+- INT_MAX represents an empty land cell.
+
+Fill each empty land cell with the distance to its nearest treasure/gate.
+If it cannot reach any treasure/gate, it should remain INT_MAX.
+Movement is allowed only in 4 directions (up, down, left, right).
+
+------------------------------------------------------------
+
+What is this problem REALLY?
+- This is basically a shortest distance problem from multiple sources.
+
+What does it look like?
+- It’s a grid, but we can treat it like a graph.
+- Each cell is a node, and it connects to 4 neighbors.
+
+What options do we have?
+- BFS is best for shortest distance in an unweighted grid.
+
+Why BFS?
+- Because BFS expands level-by-level, which directly matches distance.
+
+Core idea:
+- Push all treasures/gates (0 cells) into the queue first.
+- Run BFS from all of them together (multi-source BFS).
+- Whenever we reach an INT_MAX cell for the first time, we set its distance.
+- The first time we reach it is always the shortest distance.
+
+Time:  O(R * C)
+Space: O(R * C) for queue in worst case
+*/
+
+class Solution {
+public:
+    void islandsAndTreasure(vector<vector<int>>& grid) {
+        int r = grid.size();
+        int c = grid[0].size();
+
+        queue<pair<int,int>> q;
+
+        // Push all gates/treasures first (multi-source BFS)
+        for(int i = 0; i < r; i++){
+            for(int j = 0; j < c; j++){
+                if(grid[i][j] == 0){
+                    q.push({i, j});
+                }
+            }
+        }
+
+        vector<vector<int>> dir = {{-1,0},{1,0},{0,-1},{0,1}};
+
+        while(!q.empty()){
+            auto node = q.front();
+            q.pop();
+
+            int row = node.first;
+            int col = node.second;
+
+            for(int i = 0; i < 4; i++){
+                int nr = row + dir[i][0];
+                int nc = col + dir[i][1];
+
+                // Out of bounds or already not an empty land cell -> skip
+                if(nr < 0 || nc < 0 || nr >= r || nc >= c || grid[nr][nc] != INT_MAX){
+                    continue;
+                }
+
+                // First time reaching this empty cell gives the shortest distance
+                grid[nr][nc] = grid[row][col] + 1;
+                q.push({nr, nc});
+            }
+        }
+    }
+};
